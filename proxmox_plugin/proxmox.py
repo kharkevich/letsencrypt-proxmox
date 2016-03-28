@@ -1,5 +1,4 @@
 """Proxmox plugin for Let's Encrypt client"""
-import re
 import os
 import subprocess
 import logging
@@ -7,8 +6,9 @@ import zope.component
 import zope.interface
 from letsencrypt import interfaces
 from letsencrypt.plugins import common
-from shutil import copy
-from os import chmod
+from letsencrypt import errors
+
+from shutil import copyfile
 
 logger = logging.getLogger(__name__)
 
@@ -31,30 +31,16 @@ class ProxmoxInstaller(common.Plugin):
     def get_all_names(self):
         return []
 
-    def deploy_cert(self, domain, cert_path=None, key_path, chain_path=None, fullchain_path=None):
+    def deploy_cert(self, domain, cert_path, key_path, chain_path=None, fullchain_path=None):
 
         if not fullchain_path:
             raise errors.PluginError(
                 "The proxmox plugin currently requires --fullchain-path to "
                 "install a cert.")
         logger.info("Copy certificate")
-#        f_cert = open(cert_path, 'r')
-#        f_key = open(key_path, 'r')
-#        f_fullchain = open(fullchain_path, 'r')
 
-#        d_key = os.path.join(self.conf("location"),"pve-ssl.key")
-#        d_fullchain = os.path.join(self.conf("location"),"pve-ssl.pem")
-
-        copy(key_path, os.path.join(self.conf("location"),"pve-ssl.key"))
-        copy(fullchain_path, os.path.join(self.conf("location"),"pve-ssl.pem"))
-
-#        logger.info("Restore permission")
-
-
-#        logger.info("Connect to databse %s" % printul_setting['mongodb_uri'])
-
-#        f_cert.close()
-#        f_key.close()
+        copyfile(key_path, os.path.join(self.conf("location"),"pve-ssl.key"))
+        copyfile(fullchain_path, os.path.join(self.conf("location"),"pve-ssl.pem"))
 
     def enhance(self, domain, enhancement, options=None):
         pass  # pragma: no cover
